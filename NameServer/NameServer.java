@@ -5,16 +5,22 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class NameServer {
 	@SuppressWarnings("SleepWhileInLoop")
+	
+	public static Map<Integer, String> keyVal = new HashMap<Integer, String>();	
+	
 	public static void main(String[] args) throws Exception
 	{
 		InetAddress localhost = InetAddress.getLocalHost();
 		Socket nclientSocket=null;
-		int nameServerId = 0, port = 0, bootStrapServerport = 0;
-		String bootStrapServerIp=null, nameServerIp = localhost.getHostAddress();
+		int port = 0, bootStrapServerport = 0;
+		String bootStrapServerIp=null, nameServerId = null, nameServerIp = localhost.getHostAddress();
+		
 
 		//Taking input from File as Command Line parameters
 		try {
@@ -25,7 +31,7 @@ public class NameServer {
 
 			if(myscanner.hasNext())
 			{
-				nameServerId = Integer.parseInt(myscanner.next());
+				nameServerId = myscanner.next();
 			}
 
 			input = inputFile.nextLine();
@@ -55,10 +61,10 @@ public class NameServer {
 			// Create server socket
 			ServerSocket serSocket = new ServerSocket(port);
 			//Creating thread object for Socket
-			NameServerThread nameserverthread = new NameServerThread(serSocket);
+			NameServerThread nameserverthread = new NameServerThread(serSocket, nameServerId);
 			//starting the thread
 			nameserverthread.start();
-			NSProcess nsprocess = new NSProcess();
+			NSProcess nsprocess = new NSProcess(nameServerId);
 
 			while (true)
 			{
@@ -66,7 +72,7 @@ public class NameServer {
 				String command = takeInput();
 				if(command.contains("enter"))
 				{
-					nsprocess.enter(nameServerId, bootStrapServerIp, bootStrapServerport);
+					nsprocess.enter(command, nameServerId, bootStrapServerIp, bootStrapServerport);
 				}
 				else
 				{

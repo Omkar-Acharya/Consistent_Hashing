@@ -8,6 +8,16 @@ public class BSProcess
 	int prePort=0;
 	int succPort=0;
 
+	public int getPredecessor()
+	{
+		return this.prePort;
+	}
+
+	public int getSuccessor()
+	{
+		return this.succPort;
+	}
+
 	void setPredecessor(int port)
 	{		
 		//call this when predecessory is changed
@@ -75,6 +85,25 @@ public class BSProcess
 	{
 
 		return "";
+	}
+	public String enter(Map<Integer, String> keyVal, String id)
+	{
+		String range="";
+		if(keyVal.containsKey(Integer.parseInt(id)))
+		{	for(int key : keyVal.keySet())
+		{
+			if(key<=Integer.parseInt(id)&& key!=0)
+			{
+				String value = keyVal.get(key);
+				range = range+String.valueOf(key)+" "+value+"#";				
+			}
+		}
+		}
+		else
+		{
+			return "false";
+		}
+		return range;
 	}
 
 }

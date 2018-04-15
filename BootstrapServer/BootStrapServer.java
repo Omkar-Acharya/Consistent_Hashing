@@ -11,11 +11,14 @@ import java.util.Scanner;
 public class BootStrapServer 
 
 {
+	public static Map<Integer, String> keyVal = new HashMap<Integer, String>();
+	public static int port=0;
+	
 	public static void main(String[] args)
 	{
-		int port = 0, serverId = 0, key = 0;
+		int  serverId = 0, key = 0;
 		String value = null;
-	  	Map<Integer, String> keyVal = new HashMap<Integer, String>();
+	  	
 		//Taking File from command-line parameters
 		try
 		{
@@ -68,10 +71,11 @@ public class BootStrapServer
 			// Create server socket
 			ServerSocket serSocket = new ServerSocket(port);
 			//Creating thread object for Socket
+			BSProcess process = new BSProcess();
 			BootstrapServerThread bootstrapserverthread = new BootstrapServerThread(serSocket);
 			//starting the thread
 			bootstrapserverthread.start();
-			BSProcess process = new BSProcess();
+			
 			
 			while (true)
 			{
