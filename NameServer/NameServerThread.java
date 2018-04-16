@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.*;
 
 public class NameServerThread extends Thread {
 	ServerSocket sersocket;
@@ -13,22 +14,22 @@ public class NameServerThread extends Thread {
 	DataOutputStream output;
 	String inputString = null;
 	NSProcess nsprocess;
-	int td=0;
 
 	NameServerThread(ServerSocket sersocket, String nameServerId)
 	{
 		//Initialize the socket, DataInputStream, DataOutputStream for object
 		try
-		{	
+		{
 			this.sersocket = sersocket;
 			this.nsprocess = new NSProcess(nameServerId);
 		}
 		catch (Exception ex)
 		{
-			Logger.getLogger(BootstrapServerThread.class.getName()).log(Level.SEVERE, null, ex);
+			System.out.println(ex.getMessage());
+			// Logger.getLogger(BootstrapServerThread.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-	
+
 	public void run()
 	{
 		while(true){
@@ -37,38 +38,72 @@ public class NameServerThread extends Thread {
 				this.socket = sersocket.accept();
 				this.input = new DataInputStream(socket.getInputStream());
 				this.output = new DataOutputStream(socket.getOutputStream());
-				
-				if(input.readUTF() == "enter"){
-					
+
+				if(input.readUTF().equals("enter"))
+				{
+
 					String id = this.input.readUTF();
-					//is in my range?					
+					//is in my range?
 						//if yes send true
-							//else send false										
+							//else send false
 					String range="";
 					if(NameServer.keyVal.containsKey(Integer.parseInt(id)))
-					{	for(int key : NameServer.keyVal.keySet())
+					{
+						for(int key : NameServer.keyVal.keySet())
 						{
 							if(key<=Integer.parseInt(id)&& key!=0)
 							{
 								String value = NameServer.keyVal.get(key);
-								range = range+String.valueOf(key)+" "+value+"#";	
-								output.writeUTF(range);
-								output.flush();
+								range = range+String.valueOf(key)+" "+value+"#";
 							}
 						}
+						output.writeUTF(range);
+						output.flush();
+						
+						//self as new server port
+						output.writeUTF(String.valueOf(NameServer.port));
+						output.flush();
+						
+						//self predecessor as pred of new server
+						output.writeUTF(String.valueOf(nsprocess.getPredecessor()));
+						output.flush();
+						
+						//change self pred as new name server
+						nsprocess.setPredecessor(socket.getPort());
+						
+						
+						//remove those keys
+
+						Iterator<Map.Entry<Integer,String>> iter = NameServer.keyVal.entrySet().iterator();
+						while (iter.hasNext())
+						{
+			    	Map.Entry<Integer,String> entry = iter.next();
+			    	if((entry.getKey()<=Integer.parseInt(id)&& entry.getKey()!=0))
+						{
+			        iter.remove();
+			    	}
+						}
+						
 					}
 					else
 					{
 						output.writeUTF("false");
 						output.flush();
+						String successorPort = String.valueOf((nsprocess.getSuccessor()));
+						output.writeUTF(successorPort);
+						output.flush();
 					}
-					
 				}
 				
+				if(input.readUTF().equals("chsuccenter"))
+				{
+					nsprocess.setSuccessor(Integer.parseInt(input.readUTF()));
+				}
+
 			}
 			catch (IOException ex)
 			{
-				Logger.getLogger(BootstrapServerThread.class.getName()).log(Level.SEVERE, null, ex);
+				System.out.println(ex.getMessage());
 			}
 		}
 	}

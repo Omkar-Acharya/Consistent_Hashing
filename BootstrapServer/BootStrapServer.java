@@ -7,23 +7,24 @@ import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.*;
 
-public class BootStrapServer 
+public class BootStrapServer
 
 {
-	public static Map<Integer, String> keyVal = new HashMap<Integer, String>();
+	public static Map<Integer, String> keyVal = new TreeMap<Integer, String>();
 	public static int port=0;
-	
+
 	public static void main(String[] args)
 	{
 		int  serverId = 0, key = 0;
 		String value = null;
-	  	
+
 		//Taking File from command-line parameters
 		try
 		{
-				
-			
+
+
 			Scanner inputFile = new Scanner(new File(args[0]));
 			String input = inputFile.nextLine();
 
@@ -40,11 +41,11 @@ public class BootStrapServer
 			if(myscanner.hasNext()){
 				port = Integer.parseInt(myscanner.next());
 			}
-			
+
 			do{
 				input = inputFile.nextLine();
 				myscanner = new Scanner(input);
-				
+
 				//read the key value pairs and store them
 				if(myscanner.hasNext()){
 					key = Integer.parseInt(myscanner.next());
@@ -53,17 +54,17 @@ public class BootStrapServer
 				if(myscanner.hasNext()){
 					value = myscanner.next().toString();
 				}
-				
+
 				//storing the key value in hashmap
 				keyVal.put(key, value);
-				
+
 			}while(inputFile.hasNextLine());
-			
+
 
 		} catch (FileNotFoundException ex) {
 			System.out.println("File Not Found!");
 		}
-		
+
 		System.out.println("Bootstrap Server Started");
 
 		try
@@ -75,14 +76,14 @@ public class BootStrapServer
 			BootstrapServerThread bootstrapserverthread = new BootstrapServerThread(serSocket);
 			//starting the thread
 			bootstrapserverthread.start();
-			
-			
+
+
 			while (true)
 			{
 				Thread.sleep(513);
 				String command = takeInput();
 				if(command.contains("lookup"))
-				{							
+				{
 					int lookupkey =Integer.parseInt(command.split(" ")[1]);
 					System.out.println(process.lookup(lookupkey,keyVal));
 				}
@@ -96,16 +97,16 @@ public class BootStrapServer
 						if(command.contains("delete"))
 						{
 							int deletekey =Integer.parseInt(command.split(" ")[1]);
-							System.out.println(process.delete(deletekey,keyVal));							
-						}				
+							System.out.println(process.delete(deletekey,keyVal));
+						}
 			}
 		}
-		catch (Exception ex) 
+		catch (Exception ex)
 		{
 			System.out.println("exceptionnn" + ex + " exception " + ex.getMessage());
 		}
 	}
-	
+
 	public static String takeInput() throws Exception
 	{
 		System.out.print("Bootstrap Server> ");

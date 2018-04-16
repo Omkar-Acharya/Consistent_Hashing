@@ -8,18 +8,28 @@ public class NSProcess {
 	int prePort=0;
 	int succPort=0;
 	String myid = null;
-	
+
 	public NSProcess(String myid) {
 		this.myid = myid;
 	}
-	
+
+	public  int getPredecessor()
+	{
+		return this.prePort;
+	}
+
+	public int getSuccessor()
+	{
+		return this.succPort;
+	}
+
 	void setPredecessor(int port)
-	{		
+	{
 		//call this when predecessor is changed
 		this.prePort = port;
 		System.out.println("Predecessor's port is: "+this.prePort);
 	}
-	
+
 	void setSuccessor(int port)
 	{
 		//call this when successor is changed
@@ -27,64 +37,86 @@ public class NSProcess {
 		System.out.println("Successor's port is: "+this.succPort);
 	}
 
-	public String lookup() 
+	public String lookup()
 	{
-		return "";	
-	}
-	
-	public String insert() 
-	{
-		
 		return "";
 	}
 
-	public String delete() 
+	public String insert()
 	{
-		
+
 		return "";
+	}
+
+	public String delete()
+	{
+
+		return "";
+	}
+	public void printKeyVal()
+	{
+			System.out.println("printing name server Map");
+			for(int key :	NameServer.keyVal.keySet())
+			{
+				System.out.println(" key: "+key+" value: "+	NameServer.keyVal.get(key));
+			}
 	}
 
 	public void enter(String command, String id, String ip, int port)
 	{
-		try {
+		try
+		{
+			System.out.println(command+"id: "+id+"ip: "+ip+"port: "+port);
 			Socket socket = new Socket(ip, port);
 			DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 			DataInputStream dis =	new DataInputStream(socket.getInputStream());
-			
+			System.out.println("conn established");
 			dos.writeUTF(command);
 			dos.flush();
 			dos.writeUTF(id);
 			dos.flush();
-			
-			if(dis.readUTF() == "false")
+
+			String range = dis.readUTF();
+
+			if(range.equals("false"))
 			{
+				System.out.println("inside name process false");
 				succPort = Integer.parseInt(dis.readUTF());
-				
 				enter(command, id, "localhost", succPort);
 			}
 			else
 			{
 				//take the range
-				String range = dis.readUTF();
-				
+				System.out.println("inside name process true");
+				System.out.println("range to send is: "+range);
 				String[] keyValues = range.split("#");
-				
+
 				for(String pairs : keyValues)
 				{
 					String key = pairs.split(" ")[0];
 					String value = pairs.split(" ")[1];
 					NameServer.keyVal.put(Integer.parseInt(key), value);
-				}				
+				}
+				setSuccessor(Integer.parseInt(dis.readUTF()));
 				setPredecessor(Integer.parseInt(dis.readUTF()));
-				setSuccessor(Integer.parseInt(dis.readUTF()));				
+				
+				//tell current predecessor to change its successor as self port
+				Socket socketPred = new Socket("localhost", getPredecessor());
+				DataOutputStream dosPred = new DataOutputStream(socketPred.getOutputStream());
+				dosPred.writeUTF("chsuccenter");
+				dosPred.flush();
+				dosPred.writeUTF(String.valueOf(NameServer.port));
+				dosPred.flush();
+				dosPred.close();
+				socketPred.close();
+				
+				this.printKeyVal();
 			}
-			
-		} catch (UnknownHostException e) {
+
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
+			System.out.println("Exception is: "+e.getMessage());
 		}
 	}
 }

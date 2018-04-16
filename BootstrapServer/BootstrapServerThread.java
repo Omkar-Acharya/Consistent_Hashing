@@ -19,7 +19,7 @@ public class BootstrapServerThread extends Thread {
 	{
 		//Initialize the socket, DataInputStream, DataOutputStream for object
 		try
-		{	
+		{
 			this.sersocket = sersocket;
 		}
 		catch (Exception ex)
@@ -36,28 +36,47 @@ public class BootstrapServerThread extends Thread {
 				this.socket = sersocket.accept();
 				this.input = new DataInputStream(socket.getInputStream());
 				this.output = new DataOutputStream(socket.getOutputStream());
+				System.out.println("conn accepted by bootstrap");
 
 				//NameServerList nameserverlist = new NameServerList();
-				if(input.readUTF() == "enter")
+				if(input.readUTF().equals("enter"))
 				{
+					System.out.println("inside bootrstrap enter");
 					String id = input.readUTF();
 					String result = bsProcess.enter(BootStrapServer.keyVal, id);
-					
+
 					if(result.contains("false"))
 					{
 						//send successor port.
+						output.writeUTF("false");
+						output.flush();
 						String successorPort = String.valueOf((bsProcess.getSuccessor()));
 						output.writeUTF(successorPort);
-						
+
 					}
 					else
 					{
+						System.out.println("range to send is: "+result);
 						output.writeUTF(result);
 						output.flush();
+						
+						//self as new server port
 						output.writeUTF(String.valueOf(BootStrapServer.port));
 						output.flush();
-						output.writeUTF(String.valueOf(bsProcess.getSuccessor()));
+						
+						//self predecessor as pred of new server
+						output.writeUTF(String.valueOf(bsProcess.getPredecessor()));
+						output.flush();
+						
+						//change self predecessor as new name server
+						bsProcess.setPredecessor(socket.getPort());				
+						
 					}
+				}
+				
+				if(input.readUTF().equals("chsuccenter"))
+				{
+					bsProcess.setSuccessor(Integer.parseInt(input.readUTF()));
 				}
 
 

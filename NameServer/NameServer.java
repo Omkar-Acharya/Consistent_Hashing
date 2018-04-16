@@ -8,19 +8,21 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.*;
 
 public class NameServer {
 	@SuppressWarnings("SleepWhileInLoop")
-	
-	public static Map<Integer, String> keyVal = new HashMap<Integer, String>();	
-	
+	public	static int port=0;
+
+	public static Map<Integer, String> keyVal = new TreeMap<Integer, String>();
+
 	public static void main(String[] args) throws Exception
 	{
 		InetAddress localhost = InetAddress.getLocalHost();
 		Socket nclientSocket=null;
-		int port = 0, bootStrapServerport = 0;
+		int bootStrapServerport = 0;
 		String bootStrapServerIp=null, nameServerId = null, nameServerIp = localhost.getHostAddress();
-		
+
 
 		//Taking input from File as Command Line parameters
 		try {
@@ -47,6 +49,7 @@ public class NameServer {
 			if(myscanner.hasNext()){
 				bootStrapServerIp = myscanner.next().toString();
 			}
+			System.out.println("ip of bootrstrap is:"+bootStrapServerIp);
 
 			if(myscanner.hasNext()){
 				bootStrapServerport = Integer.parseInt(myscanner.next());
@@ -76,11 +79,11 @@ public class NameServer {
 				}
 				else
 				{
-					
+
 				}
 			}
 		}
-		catch (Exception ex) 
+		catch (Exception ex)
 		{
 			System.out.println("exceptionnn" + ex + " exception " + ex.getMessage());
 		}
@@ -88,7 +91,7 @@ public class NameServer {
 
 	public static String takeInput() throws Exception
 	{
-		System.out.print("Bootstrap Server> ");
+		System.out.print("NAME Server> ");
 		InputStreamReader reader = new InputStreamReader(System.in);
 		BufferedReader buffer = new BufferedReader(reader);
 		return buffer.readLine();
