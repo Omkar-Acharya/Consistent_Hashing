@@ -5,8 +5,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class NSProcess {
-	int prePort=0;
-	int succPort=0;
+	static int prePort=0;
+	static int succPort=0, nextsuccPort = 0;
 	String myid = null;
 
 	public NSProcess(String myid) {
@@ -75,14 +75,25 @@ public class NSProcess {
 			dos.flush();
 			dos.writeUTF(id);
 			dos.flush();
+			//Sending this port to set the predecossor of this NS successor
+			System.out.println("Sending parapredport: "+NameServer.port);
+			dos.writeUTF(String.valueOf(NameServer.port));
+			dos.flush();
+
 
 			String range = dis.readUTF();
 
 			if(range.equals("false"))
 			{
 				System.out.println("inside name process false");
-				succPort = Integer.parseInt(dis.readUTF());
-				enter(command, id, "localhost", succPort);
+				nextsuccPort = Integer.parseInt(dis.readUTF());
+				
+				//closing the socket
+				dis.close();
+				dos.close();
+				socket.close();
+				
+				enter(command, id, "localhost", nextsuccPort);
 			}
 			else
 			{
@@ -99,6 +110,11 @@ public class NSProcess {
 				}
 				setSuccessor(Integer.parseInt(dis.readUTF()));
 				setPredecessor(Integer.parseInt(dis.readUTF()));
+				
+				//closing the socket
+				dis.close();
+				dos.close();
+				socket.close();
 				
 				//tell current predecessor to change its successor as self port
 				Socket socketPred = new Socket("localhost", getPredecessor());

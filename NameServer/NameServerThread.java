@@ -38,10 +38,11 @@ public class NameServerThread extends Thread {
 				this.socket = sersocket.accept();
 				this.input = new DataInputStream(socket.getInputStream());
 				this.output = new DataOutputStream(socket.getOutputStream());
-
-				if(input.readUTF().equals("enter"))
+				
+				String inputcommand = input.readUTF();
+				if(inputcommand.equals("enter"))
 				{
-
+					System.out.println("Inside NameServerThread enter");
 					String id = this.input.readUTF();
 					//is in my range?
 						//if yes send true
@@ -49,6 +50,7 @@ public class NameServerThread extends Thread {
 					String range="";
 					if(NameServer.keyVal.containsKey(Integer.parseInt(id)))
 					{
+						System.out.println("Inside NameServerThread ID Found");
 						for(int key : NameServer.keyVal.keySet())
 						{
 							if(key<=Integer.parseInt(id)&& key!=0)
@@ -57,6 +59,11 @@ public class NameServerThread extends Thread {
 								range = range+String.valueOf(key)+" "+value+"#";
 							}
 						}
+						
+						//taking the port of predecessor from new NS
+						String parapreport = input.readUTF();
+						System.out.println("Parapredport taken");
+						
 						output.writeUTF(range);
 						output.flush();
 						
@@ -65,11 +72,13 @@ public class NameServerThread extends Thread {
 						output.flush();
 						
 						//self predecessor as pred of new server
-						output.writeUTF(String.valueOf(nsprocess.getPredecessor()));
+						String selfpredaspredofns = String.valueOf(NSProcess.prePort);
+						System.out.println("Self predecessor as pred of new server: "+selfpredaspredofns);
+						output.writeUTF(selfpredaspredofns);
 						output.flush();
 						
 						//change self pred as new name server
-						nsprocess.setPredecessor(socket.getPort());
+						nsprocess.setPredecessor(Integer.parseInt(parapreport));
 						
 						
 						//remove those keys
@@ -95,7 +104,7 @@ public class NameServerThread extends Thread {
 					}
 				}
 				
-				if(input.readUTF().equals("chsuccenter"))
+				if(inputcommand.equals("chsuccenter"))
 				{
 					nsprocess.setSuccessor(Integer.parseInt(input.readUTF()));
 				}

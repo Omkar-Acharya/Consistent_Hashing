@@ -39,7 +39,8 @@ public class BootstrapServerThread extends Thread {
 				System.out.println("conn accepted by bootstrap");
 
 				//NameServerList nameserverlist = new NameServerList();
-				if(input.readUTF().equals("enter"))
+				String inputcommand = input.readUTF();
+				if(inputcommand.equals("enter"))
 				{
 					System.out.println("inside bootrstrap enter");
 					String id = input.readUTF();
@@ -56,6 +57,9 @@ public class BootstrapServerThread extends Thread {
 					}
 					else
 					{
+						//taking the port of predecessor from new NS
+						String parapreport = input.readUTF();
+						
 						System.out.println("range to send is: "+result);
 						output.writeUTF(result);
 						output.flush();
@@ -65,16 +69,16 @@ public class BootstrapServerThread extends Thread {
 						output.flush();
 						
 						//self predecessor as pred of new server
-						output.writeUTF(String.valueOf(bsProcess.getPredecessor()));
+						output.writeUTF(String.valueOf(BSProcess.prePort));
 						output.flush();
 						
 						//change self predecessor as new name server
-						bsProcess.setPredecessor(socket.getPort());				
+						bsProcess.setPredecessor(Integer.parseInt(parapreport));				
 						
 					}
 				}
 				
-				if(input.readUTF().equals("chsuccenter"))
+				else if(inputcommand.equals("chsuccenter"))
 				{
 					bsProcess.setSuccessor(Integer.parseInt(input.readUTF()));
 				}

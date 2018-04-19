@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.*;
 public class BSProcess
 {
-	int prePort=0;
-	int succPort=0;
+	static int prePort=BootStrapServer.port;
+	static int succPort=BootStrapServer.port;
 
 	public int getPredecessor()
 	{
@@ -22,12 +22,14 @@ public class BSProcess
 	{
 		//call this when predecessory is changed
 		this.prePort = port;
+		System.out.println("Predecessor's port is: "+this.prePort);
 	}
 
 	void setSuccessor(int port)
 	{
 		//call this when successor is changed
 		this.succPort = port;
+		System.out.println("Successor's port is: "+this.succPort);
 	}
 
 	public void printKeyVal(Map<Integer, String> keyVal)
