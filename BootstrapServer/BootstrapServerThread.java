@@ -59,39 +59,40 @@ public class BootstrapServerThread extends Thread {
 					{
 						//taking the port of predecessor from new NS
 						String parapreport = input.readUTF();
-						
+
 						System.out.println("range to send is: "+result);
 						output.writeUTF(result);
 						output.flush();
-						
+
 						//self as new server port
 						output.writeUTF(String.valueOf(BootStrapServer.port));
 						output.flush();
-						
+
 						//self predecessor as pred of new server
 						output.writeUTF(String.valueOf(BSProcess.prePort));
 						output.flush();
-						
+
 						//change self predecessor as new name server
-						bsProcess.setPredecessor(Integer.parseInt(parapreport));				
-						
+						bsProcess.setPredecessor(Integer.parseInt(parapreport));
+
 					}
 				}
-				
+
 				if(inputcommand.equals("chsuccenter"))
 				{
 					bsProcess.setSuccessor(Integer.parseInt(input.readUTF()));
 				}
-				
+
 				if(inputcommand.equals("lookup"))
 				{
 					String flag = input.readUTF();
-					
+
 					if(flag.equals("true"))
 					{
 						String value = input.readUTF();
 						String Servertraversed = input.readUTF();
 						System.out.println("Value is: "+value+" and Server traversed are: "+Servertraversed);
+						System.out.println("Final Response was obtained from this server "+Servertraversed.split("#")[Servertraversed.split("#").length-1]);
 					}
 					else if(flag.equals("false"))
 					{
@@ -99,7 +100,38 @@ public class BootstrapServerThread extends Thread {
 						String Servertraversed = input.readUTF();
 						System.out.println("Value is: "+value+" and Server traversed are: "+Servertraversed);
 					}
-					
+
+				}
+
+				if(inputcommand.equals("chPredExit"))
+				{
+					String range = input.readUTF();
+					int predExitPort =Integer.parseInt(input.readUTF());
+					BSProcess.prePort = predExitPort;
+					output.writeUTF(String.valueOf(BootStrapServer.serverId));
+
+					System.out.println("on EXIT predecossor of BootStrap changed to: "+BSProcess.prePort);
+					String[] rangeArray = range.split("#");
+					for(String pair : rangeArray)
+					{
+						int pairKey = Integer.parseInt(pair.split(" ")[0]);
+						String pairValue =  pair.split(" ")[1];
+						BootStrapServer.keyVal.put(pairKey,pairValue);
+					}
+				}
+
+				if(inputcommand.equals("chSuccExit"))
+				{
+					int newSucc =Integer.parseInt(input.readUTF());
+					BSProcess.succPort = newSucc;
+					System.out.println("on EXIT successor of BootStrap changed to: "+BSProcess.succPort);
+				}
+
+				if(inputcommand.equals("insert"))
+				{
+					String Servertraversed = input.readUTF();
+					System.out.println("Server traversed are: "+Servertraversed);
+					System.out.println("Final Response was obtained from this server "+Servertraversed.split("#")[Servertraversed.split("#").length-1]);
 				}
 
 

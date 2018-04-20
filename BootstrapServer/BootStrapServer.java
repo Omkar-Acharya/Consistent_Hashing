@@ -90,7 +90,8 @@ public class BootStrapServer
 				else if(command.contains("insert"))
 				{
 					int insertkey=Integer.parseInt(command.split(" ")[1]);
-					System.out.println(bspprocess.insert(insertkey,keyVal));
+					String insertvalue = command.split(" ")[2];
+					bspprocess.insert(insertkey, insertvalue);
 				}
 				else if(command.contains("delete"))
 				{

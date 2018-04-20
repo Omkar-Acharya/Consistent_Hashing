@@ -42,7 +42,7 @@ public class NSProcess {
 		//Servers traversed
 		String serverstraversed = BSorNSId+"#"+NameServer.nameServerId;
 		System.out.println("ServerIds Traversed: "+serverstraversed);
-		
+
 		//key out of range
 		if((Integer.parseInt(lookupkey) < Integer.parseInt(NameServer.nameServerId)) && (!NameServer.keyVal.containsKey(Integer.parseInt(lookupkey))))
 		{
@@ -72,8 +72,8 @@ public class NSProcess {
 		else if(NameServer.keyVal.containsKey(Integer.parseInt(lookupkey)))
 		{
 			System.out.println("Inside NS lookup...if key found");
-			String value = "value is"+NameServer.keyVal.get(Integer.parseInt(lookupkey));
-			
+			String value = NameServer.keyVal.get(Integer.parseInt(lookupkey));
+
 			//sending the value and servers traversed to bootstrap server
 			try {
 				Socket lookupsocketfound = new Socket("localhost", NameServer.bootStrapServerport);
@@ -88,7 +88,7 @@ public class NSProcess {
 				dos.flush();
 				dos.close();
 				lookupsocketfound.close();
-				
+
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -96,7 +96,7 @@ public class NSProcess {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
 		}
 		else
 		{
@@ -122,10 +122,63 @@ public class NSProcess {
 		}
 	}
 
-	public String insert()
+	public void insert(String insertkey, String insertvalue, String BSorNSId)
 	{
+		System.out.println("Inside NS insert...");
+		String serverstraversed = BSorNSId+"#"+NameServer.nameServerId;
 
-		return "";
+		int firstKey = NameServer.keyVal.firstKey();
+		int lastKey = NameServer.keyVal.lastKey();
+
+		if(Integer.parseInt(insertkey) < Integer.parseInt(NameServer.nameServerId))
+		{
+			System.out.println("Inside NS entry....key is to be inserted into this NS");
+			NameServer.keyVal.put(Integer.parseInt(insertkey), insertvalue);
+
+			//Send details to Bootstrap after inserting kay value
+			try {
+				Socket insertkeysocket = new Socket("localhost", NameServer.bootStrapServerport);
+				DataOutputStream dos = new DataOutputStream(insertkeysocket.getOutputStream());
+				dos.writeUTF("insert");
+				dos.flush();
+				dos.writeUTF(serverstraversed);
+				dos.flush();
+				dos.close();
+				insertkeysocket.close();
+
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		else
+		{
+			System.out.println("Inside NS insert...key not inserted in this name server...going to successor NS");
+			try
+			//send lookup key to successor
+			{
+				Socket sockettosuccessor = new Socket("localhost", NSProcess.succPort);
+				DataOutputStream dos = new DataOutputStream(sockettosuccessor.getOutputStream());
+				dos.writeUTF("insert");
+				dos.flush();
+				dos.writeUTF(insertkey);
+				dos.flush();
+				dos.writeUTF(insertvalue);
+				dos.flush();
+				dos.writeUTF(serverstraversed);
+				dos.flush();
+				dos.close();
+				sockettosuccessor.close();
+			}
+			catch(Exception ex)
+			{
+				System.out.println("ex 0"+ex.getMessage());
+			}
+		}
 	}
 
 	public String delete()
@@ -140,6 +193,58 @@ public class NSProcess {
 		{
 			System.out.println(" key: "+key+" value: "+	NameServer.keyVal.get(key));
 		}
+	}
+
+	public void exit(String command, String id)
+	{
+			try
+			{
+				//give my successor range and predecessor ID
+				String commandSuccessor = "chPredExit";
+				String range ="";
+				int predExit = this.getPredecessor();
+				int succID=0;
+				for(int key : NameServer.keyVal.keySet())
+				{
+					range = range+key+" "+NameServer.keyVal.get(key);
+					range = range+"#";
+				}
+				Socket sockettosuccessor = new Socket("localhost", NSProcess.succPort);
+				DataOutputStream dos = new DataOutputStream(sockettosuccessor.getOutputStream());
+				DataInputStream dis = new DataInputStream(sockettosuccessor.getInputStream());
+				dos.writeUTF(commandSuccessor);
+				dos.flush();
+				dos.writeUTF(range);
+				dos.flush();
+				dos.writeUTF(String.valueOf(predExit));
+				dos.flush();
+				succID =Integer.parseInt(dis.readUTF());
+				dos.close();
+				dis.close();
+				sockettosuccessor.close();
+
+				//give my predecessor its new successor
+				String commandSuccessorExit = "chSuccExit";
+				int succExit = this.getSuccessor();
+
+				Socket sockettopred = new Socket("localhost", this.getPredecessor());
+				DataOutputStream dospred = new DataOutputStream(sockettopred.getOutputStream());
+				dospred.writeUTF(commandSuccessorExit);
+				dospred.flush();
+				dospred.writeUTF(String.valueOf(succExit));
+				dospred.flush();
+				dospred.close();
+				sockettopred.close();
+
+				System.out.println("Successful exit!");
+				System.out.println("Range given to: "+succID);
+				System.out.println("Range given is: "+range);
+
+			}
+			catch(Exception ex)
+			{
+					System.out.println("exception is exit"+ex.getMessage());
+			}
 	}
 
 	public void enter(String command, String id, String ip, int port)

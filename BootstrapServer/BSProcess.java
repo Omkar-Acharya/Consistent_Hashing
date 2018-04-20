@@ -1,6 +1,8 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.TreeMap;
 import java.util.*;
 
@@ -49,13 +51,13 @@ public class BSProcess
 		//key out of range
 		if(key < 0 || key > 1023)
 		{
-			System.out.println("Key Not Found");
+			System.out.println("Key is out of range (0, 1023)");
 		}
 
 		if(BootStrapServer.keyVal.containsKey(key))
 		{
-			String value = "value is"+BootStrapServer.keyVal.get(key);
-			value = value+" Server Id's that are traversed: 0";
+			String value = "value is: "+BootStrapServer.keyVal.get(key);
+			value = value+" Server Id that is traversed: 0";
 			System.out.println(value);
 		}
 		else
@@ -63,7 +65,7 @@ public class BSProcess
 			try
 			//send to successor
 			{
-				Socket socket = new Socket("localhost", this.succPort);
+				Socket socket = new Socket("localhost", BSProcess.succPort);
 				DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 				dos.writeUTF("lookup");
 				dos.flush();
@@ -81,16 +83,66 @@ public class BSProcess
 		}
 	}
 
-	private Boolean IsinMyRange(int key, TreeMap<Integer, String> keyVal) {
-
-
-		return true;
-	}
-
-	public String insert(int deletekey, TreeMap<Integer, String> keyVal)
+	public void insert(int insertkey, String insertvalue)
 	{
-
-		return "";
+		String succId = null;
+		if(insertkey < 0 || insertkey > 1023)
+		{
+			System.out.println("Key is out of range (0, 1023)");
+		}
+		
+		//Ask successor for its ID
+		try {
+			Socket asksuccsocket = new Socket("localhost", BSProcess.prePort);
+			System.out.println("Connected to Successor to get its id");
+			DataInputStream asksuccinput = new DataInputStream(asksuccsocket.getInputStream());
+			DataOutputStream asksuccoutput = new DataOutputStream(asksuccsocket.getOutputStream());
+			asksuccoutput.writeUTF("tellmeyourid");
+			asksuccoutput.flush();
+			succId = asksuccinput.readUTF();
+			
+			asksuccinput.close();
+			asksuccoutput.close();
+			asksuccsocket.close();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if((Integer.parseInt(succId)) < insertkey)
+		{
+			System.out.println("key is to be inserted into Bootstrap Server");
+			System.out.println("The Key Value pair is inserted into Server with ID: "+BootStrapServer.serverId);
+			System.out.println("Server Id that is traversed: 0");
+			BootStrapServer.keyVal.put(insertkey, insertvalue);
+		}
+		
+		else
+		{
+			try
+			//send to successor
+			{
+				Socket socket = new Socket("localhost", BSProcess.succPort);
+				DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+				dos.writeUTF("insert");
+				dos.flush();
+				dos.writeUTF(String.valueOf(insertkey));
+				dos.flush();
+				dos.writeUTF(String.valueOf(insertvalue));
+				dos.flush();
+				dos.writeUTF(String.valueOf(BootStrapServer.serverId));
+				dos.flush();
+				dos.close();
+				socket.close();
+			}
+			catch(Exception ex)
+			{
+				System.out.println("ex 0"+ex.getMessage());
+			}
+		}
 	}
 
 	public String delete(int deletekey, TreeMap<Integer, String> keyVal)

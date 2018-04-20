@@ -81,7 +81,10 @@ public class NameServer {
 				}
 				else
 				{
-
+					if(command.contains("exit"))
+					{
+						nsprocess.exit(command, nameServerId);
+					}
 				}
 			}
 		}
