@@ -78,9 +78,28 @@ public class BootstrapServerThread extends Thread {
 					}
 				}
 				
-				else if(inputcommand.equals("chsuccenter"))
+				if(inputcommand.equals("chsuccenter"))
 				{
 					bsProcess.setSuccessor(Integer.parseInt(input.readUTF()));
+				}
+				
+				if(inputcommand.equals("lookup"))
+				{
+					String flag = input.readUTF();
+					
+					if(flag.equals("true"))
+					{
+						String value = input.readUTF();
+						String Servertraversed = input.readUTF();
+						System.out.println("Value is: "+value+" and Server traversed are: "+Servertraversed);
+					}
+					else if(flag.equals("false"))
+					{
+						String value = input.readUTF();
+						String Servertraversed = input.readUTF();
+						System.out.println("Value is: "+value+" and Server traversed are: "+Servertraversed);
+					}
+					
 				}
 
 

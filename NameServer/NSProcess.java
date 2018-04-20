@@ -15,31 +15,111 @@ public class NSProcess {
 
 	public  int getPredecessor()
 	{
-		return this.prePort;
+		return NSProcess.prePort;
 	}
 
 	public int getSuccessor()
 	{
-		return this.succPort;
+		return NSProcess.succPort;
 	}
 
 	void setPredecessor(int port)
 	{
 		//call this when predecessor is changed
-		this.prePort = port;
-		System.out.println("Predecessor's port is: "+this.prePort);
+		NSProcess.prePort = port;
+		System.out.println("Predecessor's port is: "+NSProcess.prePort);
 	}
 
 	void setSuccessor(int port)
 	{
 		//call this when successor is changed
-		this.succPort = port;
-		System.out.println("Successor's port is: "+this.succPort);
+		NSProcess.succPort = port;
+		System.out.println("Successor's port is: "+NSProcess.succPort);
 	}
 
-	public String lookup()
+	public void lookup(String lookupkey, String BSorNSId)
 	{
-		return "";
+		//Servers traversed
+		String serverstraversed = BSorNSId+"#"+NameServer.nameServerId;
+		System.out.println("ServerIds Traversed: "+serverstraversed);
+		
+		//key out of range
+		if((Integer.parseInt(lookupkey) < Integer.parseInt(NameServer.nameServerId)) && (!NameServer.keyVal.containsKey(Integer.parseInt(lookupkey))))
+		{
+			System.out.println("Inside NS lookup if...if key not found");
+			try {
+				Socket lookupsocketnotfound = new Socket("localhost", NameServer.bootStrapServerport);
+				DataOutputStream dos = new DataOutputStream(lookupsocketnotfound.getOutputStream());
+				dos.writeUTF("lookup");
+				dos.flush();
+				dos.writeUTF("false");
+				dos.flush();
+				dos.writeUTF("Key Not Found");
+				dos.flush();
+				dos.writeUTF(serverstraversed);
+				dos.flush();
+				dos.close();
+				lookupsocketnotfound.close();
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		else if(NameServer.keyVal.containsKey(Integer.parseInt(lookupkey)))
+		{
+			System.out.println("Inside NS lookup...if key found");
+			String value = "value is"+NameServer.keyVal.get(Integer.parseInt(lookupkey));
+			
+			//sending the value and servers traversed to bootstrap server
+			try {
+				Socket lookupsocketfound = new Socket("localhost", NameServer.bootStrapServerport);
+				DataOutputStream dos = new DataOutputStream(lookupsocketfound.getOutputStream());
+				dos.writeUTF("lookup");
+				dos.flush();
+				dos.writeUTF("true");
+				dos.flush();
+				dos.writeUTF(value);
+				dos.flush();
+				dos.writeUTF(serverstraversed);
+				dos.flush();
+				dos.close();
+				lookupsocketfound.close();
+				
+			} catch (UnknownHostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		else
+		{
+			System.out.println("Inside NS lookup...if key not with this name server...going to successor NS");
+			try
+			//send lookup key to successor
+			{
+				Socket sockettosuccessor = new Socket("localhost", NSProcess.succPort);
+				DataOutputStream dos = new DataOutputStream(sockettosuccessor.getOutputStream());
+				dos.writeUTF("lookup");
+				dos.flush();
+				dos.writeUTF(lookupkey);
+				dos.flush();
+				dos.writeUTF(serverstraversed);
+				dos.flush();
+				dos.close();
+				sockettosuccessor.close();
+			}
+			catch(Exception ex)
+			{
+				System.out.println("ex 0"+ex.getMessage());
+			}
+		}
 	}
 
 	public String insert()
@@ -55,11 +135,11 @@ public class NSProcess {
 	}
 	public void printKeyVal()
 	{
-			System.out.println("printing name server Map");
-			for(int key :	NameServer.keyVal.keySet())
-			{
-				System.out.println(" key: "+key+" value: "+	NameServer.keyVal.get(key));
-			}
+		System.out.println("printing name server Map");
+		for(int key :	NameServer.keyVal.keySet())
+		{
+			System.out.println(" key: "+key+" value: "+	NameServer.keyVal.get(key));
+		}
 	}
 
 	public void enter(String command, String id, String ip, int port)
@@ -87,12 +167,12 @@ public class NSProcess {
 			{
 				System.out.println("inside name process false");
 				nextsuccPort = Integer.parseInt(dis.readUTF());
-				
+
 				//closing the socket
 				dis.close();
 				dos.close();
 				socket.close();
-				
+
 				enter(command, id, "localhost", nextsuccPort);
 			}
 			else
@@ -110,12 +190,12 @@ public class NSProcess {
 				}
 				setSuccessor(Integer.parseInt(dis.readUTF()));
 				setPredecessor(Integer.parseInt(dis.readUTF()));
-				
+
 				//closing the socket
 				dis.close();
 				dos.close();
 				socket.close();
-				
+
 				//tell current predecessor to change its successor as self port
 				Socket socketPred = new Socket("localhost", getPredecessor());
 				DataOutputStream dosPred = new DataOutputStream(socketPred.getOutputStream());
@@ -125,7 +205,7 @@ public class NSProcess {
 				dosPred.flush();
 				dosPred.close();
 				socketPred.close();
-				
+
 				this.printKeyVal();
 			}
 

@@ -48,7 +48,11 @@ public class NameServerThread extends Thread {
 						//if yes send true
 							//else send false
 					String range="";
-					if(NameServer.keyVal.containsKey(Integer.parseInt(id)))
+					
+					int firstKey = NameServer.keyVal.firstKey();
+					int lastKey = NameServer.keyVal.lastKey();
+					System.out.println("firstKey is "+firstKey+" last key is "+lastKey);
+					if(Integer.parseInt(id)>=firstKey && Integer.parseInt(id)<=lastKey)
 					{
 						System.out.println("Inside NameServerThread ID Found");
 						for(int key : NameServer.keyVal.keySet())
@@ -107,6 +111,13 @@ public class NameServerThread extends Thread {
 				if(inputcommand.equals("chsuccenter"))
 				{
 					nsprocess.setSuccessor(Integer.parseInt(input.readUTF()));
+				}
+				
+				if(inputcommand.equals("lookup"))
+				{
+					String lookupkey = input.readUTF();
+					String BSorNSservertraversed = input.readUTF();
+					nsprocess.lookup(lookupkey, BSorNSservertraversed);
 				}
 
 			}

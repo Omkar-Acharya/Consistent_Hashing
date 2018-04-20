@@ -12,12 +12,12 @@ import java.util.*;
 public class BootStrapServer
 
 {
-	public static Map<Integer, String> keyVal = new TreeMap<Integer, String>();
-	public static int port=0;
+	public static TreeMap<Integer, String> keyVal = new TreeMap<Integer, String>();
+	public static int port=0, serverId = 0;
 
 	public static void main(String[] args)
 	{
-		int  serverId = 0, key = 0;
+		int key = 0;
 		String value = null;
 
 		//Taking File from command-line parameters
@@ -72,7 +72,7 @@ public class BootStrapServer
 			// Create server socket
 			ServerSocket serSocket = new ServerSocket(port);
 			//Creating thread object for Socket
-			BSProcess process = new BSProcess();
+			BSProcess bspprocess = new BSProcess();
 			BootstrapServerThread bootstrapserverthread = new BootstrapServerThread(serSocket);
 			//starting the thread
 			bootstrapserverthread.start();
@@ -80,25 +80,23 @@ public class BootStrapServer
 
 			while (true)
 			{
-				Thread.sleep(513);
+				Thread.sleep(2000);
 				String command = takeInput();
 				if(command.contains("lookup"))
 				{
 					int lookupkey =Integer.parseInt(command.split(" ")[1]);
-					System.out.println(process.lookup(lookupkey,keyVal));
+					bspprocess.lookup(lookupkey);
 				}
-				else
-					if(command.contains("insert"))
-					{
-						int insertkey=Integer.parseInt(command.split(" ")[1]);
-						System.out.println(process.insert(insertkey,keyVal));
-					}
-					else
-						if(command.contains("delete"))
-						{
-							int deletekey =Integer.parseInt(command.split(" ")[1]);
-							System.out.println(process.delete(deletekey,keyVal));
-						}
+				else if(command.contains("insert"))
+				{
+					int insertkey=Integer.parseInt(command.split(" ")[1]);
+					System.out.println(bspprocess.insert(insertkey,keyVal));
+				}
+				else if(command.contains("delete"))
+				{
+					int deletekey =Integer.parseInt(command.split(" ")[1]);
+					System.out.println(bspprocess.delete(deletekey,keyVal));
+				}
 			}
 		}
 		catch (Exception ex)

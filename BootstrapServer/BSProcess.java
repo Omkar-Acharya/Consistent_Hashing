@@ -1,8 +1,9 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
-import java.util.Map;
+import java.util.TreeMap;
 import java.util.*;
+
 public class BSProcess
 {
 	static int prePort=BootStrapServer.port;
@@ -10,47 +11,52 @@ public class BSProcess
 
 	public int getPredecessor()
 	{
-		return this.prePort;
+		return BSProcess.prePort;
 	}
 
 	public int getSuccessor()
 	{
-		return this.succPort;
+		return BSProcess.succPort;
 	}
 
 	void setPredecessor(int port)
 	{
 		//call this when predecessory is changed
-		this.prePort = port;
-		System.out.println("Predecessor's port is: "+this.prePort);
+		BSProcess.prePort = port;
+		System.out.println("Predecessor's port is: "+BSProcess.prePort);
 	}
 
 	void setSuccessor(int port)
 	{
 		//call this when successor is changed
-		this.succPort = port;
-		System.out.println("Successor's port is: "+this.succPort);
+		BSProcess.succPort = port;
+		System.out.println("Successor's port is: "+BSProcess.succPort);
 	}
 
-	public void printKeyVal(Map<Integer, String> keyVal)
+	public void printKeyVal(TreeMap<Integer, String> keyVal)
 	{
-			System.out.println("printing bootstrap server Map");
+			System.out.println("printing bootstrap server TreeMap");
 			for(int key :	keyVal.keySet())
 			{
 				System.out.println(" key: "+key+" value: "+keyVal.get(key));
 			}
 	}
 
-	public String lookup(int key, Map<Integer, String> keyVal)
+	public void lookup(int key)
 	{
-		Boolean inMyRange =false;
-
-		String range="";
-
-		if(keyVal.containsKey(key))
+		//Boolean inMyRange =false;
+		
+		//key out of range
+		if(key < 0 || key > 1023)
 		{
-			range = "value is"+keyVal.get(key);
-			range = range+" server traversed: 0";
+			System.out.println("Key Not Found");
+		}
+
+		if(BootStrapServer.keyVal.containsKey(key))
+		{
+			String value = "value is"+BootStrapServer.keyVal.get(key);
+			value = value+" Server Id's that are traversed: 0";
+			System.out.println(value);
 		}
 		else
 		{
@@ -58,13 +64,13 @@ public class BSProcess
 			//send to successor
 			{
 				Socket socket = new Socket("localhost", this.succPort);
-				String messageToSend = "lookup "+key;
 				DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-				dos.writeUTF(messageToSend);
+				dos.writeUTF("lookup");
 				dos.flush();
-				DataInputStream dis =	new DataInputStream(socket.getInputStream());
-				range = dis.readUTF();
-				dis.close();
+				dos.writeUTF(String.valueOf(key));
+				dos.flush();
+				dos.writeUTF(String.valueOf(BootStrapServer.serverId));
+				dos.flush();
 				dos.close();
 				socket.close();
 			}
@@ -73,37 +79,36 @@ public class BSProcess
 				System.out.println("ex 0"+ex.getMessage());
 			}
 		}
-
-
-		return range;
-		// TODO Auto-generated method stub
-
 	}
 
-	private Boolean IsinMyRange(int key, Map<Integer, String> keyVal) {
+	private Boolean IsinMyRange(int key, TreeMap<Integer, String> keyVal) {
 
 
 		return true;
 	}
 
-	public String insert(int deletekey, Map<Integer, String> keyVal)
+	public String insert(int deletekey, TreeMap<Integer, String> keyVal)
 	{
 
 		return "";
 	}
 
-	public String delete(int deletekey, Map<Integer, String> keyVal)
+	public String delete(int deletekey, TreeMap<Integer, String> keyVal)
 	{
 
 		return "";
 	}
-	public String enter(Map<Integer, String> keyVal, String id)
+	public String enter(TreeMap<Integer, String> keyVal, String id)
 	{
 		String range="";
 
 		System.out.println("inside enter of BS process");
+		
+		int firstKey = keyVal.firstKey();
+		int lastKey = keyVal.lastKey();
+		System.out.println("firstKey is "+firstKey+" last key is "+lastKey);
 
-		if(keyVal.containsKey(Integer.parseInt(id)))
+		if(Integer.parseInt(id)>=firstKey && Integer.parseInt(id)<=lastKey)
 		{
 			System.out.println("key is here");
 			for(int key : keyVal.keySet())

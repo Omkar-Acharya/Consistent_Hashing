@@ -14,14 +14,16 @@ public class NameServer {
 	@SuppressWarnings("SleepWhileInLoop")
 	public	static int port=0;
 
-	public static Map<Integer, String> keyVal = new TreeMap<Integer, String>();
-
+	public static TreeMap<Integer, String> keyVal = new TreeMap<Integer, String>();
+	static int bootStrapServerport = 0;
+	static String nameServerId = null;
+	
 	public static void main(String[] args) throws Exception
 	{
 		InetAddress localhost = InetAddress.getLocalHost();
 		Socket nclientSocket=null;
-		int bootStrapServerport = 0;
-		String bootStrapServerIp=null, nameServerId = null, nameServerIp = localhost.getHostAddress();
+		
+		String bootStrapServerIp=null, nameServerIp = localhost.getHostAddress();
 
 
 		//Taking input from File as Command Line parameters
