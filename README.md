@@ -9,7 +9,7 @@ The servers are maintained in a ring based architecture. The servers know who th
 
 Below are the functionalities they provide.
 
-1. # BootStrap Server: 
+1. BootStrap Server: 
   It is the first node of the architecture and remains permamently active. It is responsible for the entire range if there are no Name     Servers. The initial keyvalue pairs, IP and port of the BootStrap Server are in the config file of BootStrap Server. 
   Following commands can be executed on BootStrap Server:
 
@@ -17,7 +17,7 @@ Below are the functionalities they provide.
   b. Insert key:  A new key-value is inserted.
   c. Delete key:  An existing key-value is deleted.
  
-2. # Name Server:
+2. Name Server:
   These are multiple servers handling some range of key-value pairs. Name servers can anytime enter into and exit from the system.         Following commands can be executed from the name server.
 
   a. Enter: The name server enters into the system. It first contacts bootstrap server, if bootstrap has the range of key-value that  name server should get then 
