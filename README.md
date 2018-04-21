@@ -40,3 +40,6 @@ Use: javac *.java
 How to run:
 Run Bootstrap Server first. Use: java BootStrapServer myconfig.txt
 Run subsequent name servers using; java NameServer myconfig.txt
+
+“This project was done in its entirety by Akshay Mendki and Omkar Acharya. We hereby state 
+that we have not received unauthorized help of any form”
